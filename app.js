@@ -37,16 +37,17 @@ async function revealLeaderboard() {
   const { data: players, error } = await db
     .from("users")
     .select("username, clicks")
-    .order("clicks", { ascending: true });
+    .order("clicks", { ascending: false });
 
   if (error) {
     console.error(error);
     return;
   }
 
-  results.innerHTML = "";
 
   // Reveal from last to second place first
+  results.innerHTML = "";
+
   for (let i = players.length - 1; i >= 1; i--) {
 
     const player = players[i];
