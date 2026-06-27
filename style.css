@@ -66,3 +66,84 @@ body{
     font-size:30px;
     font-weight:700;
 }
+
+.winner{
+
+    transform:scale(.8);
+
+    background:linear-gradient(
+        135deg,
+        rgba(255,215,0,.20),
+        rgba(255,255,255,.08)
+    );
+
+    border:2px solid gold;
+
+    box-shadow:
+        0 0 25px rgba(255,215,0,.55),
+        0 0 70px rgba(255,215,0,.25);
+
+    margin-bottom:30px;
+}
+
+.winner-show{
+
+    opacity:1 !important;
+
+    transform:scale(1.08);
+
+    animation:
+        winnerEnter .8s ease,
+        winnerGlow 2s infinite alternate;
+}
+
+.winner-title{
+
+    color:gold;
+
+    font-weight:700;
+
+    font-size:13px;
+
+    letter-spacing:3px;
+
+    margin-bottom:6px;
+}
+
+@keyframes winnerGlow{
+
+    from{
+
+        box-shadow:
+            0 0 20px rgba(255,215,0,.35);
+
+    }
+
+    to{
+
+        box-shadow:
+            0 0 60px rgba(255,215,0,.9);
+
+    }
+
+}
+
+@keyframes winnerEnter{
+
+    from{
+
+        opacity:0;
+
+        transform:scale(.5);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:scale(1.08);
+
+    }
+
+}

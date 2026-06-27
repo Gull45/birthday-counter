@@ -9,103 +9,136 @@ const results = document.getElementById("results");
 const music = document.getElementById("music");
 const tickSound = document.getElementById("tick");
 
-overlay.addEventListener("click", async () => {
-
-    overlay.style.pointerEvents = "none";
-
-    music.volume = 0.35;
-    music.play();
-
-    await sleep(1300);
-
-    overlay.style.opacity = "0";
-
-    await sleep(600);
-
-    overlay.remove();
-
-    results.classList.remove("hidden");
-
-    await revealLeaderboard();
-
-});
-
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+overlay.addEventListener("click", async () => {
+  overlay.style.pointerEvents = "none";
+
+  music.volume = 0.35;
+  music.play();
+
+  await sleep(1000);
+
+  overlay.style.opacity = "0";
+
+  await sleep(600);
+
+  overlay.remove();
+
+  results.classList.remove("hidden");
+
+  await revealLeaderboard();
+});
 
 async function revealLeaderboard() {
 
-    const { data: players, error } = await db
-        .from("users")
-        .select("username, clicks")
-        .order("clicks", { ascending: false });
+  const { data: players, error } = await db
+    .from("users")
+    .select("username, clicks")
+    .order("clicks", { ascending: false });
 
-    if (error) {
-        console.error(error);
-        return;
-    }
+  if (error) {
+    console.error(error);
+    return;
+  }
 
-    results.innerHTML = "";
+  results.innerHTML = "";
 
-    for (let i = 0; i < players.length; i++) {
+  // Reveal from last to second place first
+  for (let i = players.length - 1; i >= 1; i--) {
 
-        const player = players[i];
+    const player = players[i];
 
-        const row = document.createElement("div");
-        row.className = "player";
+    const row = createPlayerCard(
+      players.length - i,
+      player.username,
+      player.clicks,
+      false
+    );
 
-        const place = document.createElement("div");
-        place.className = "place";
-        place.textContent = "#" + (i + 1);
+    results.appendChild(row.card);
 
-        const name = document.createElement("div");
-        name.className = "name";
-        name.textContent = player.username;
+    requestAnimationFrame(() => {
+      row.card.classList.add("show");
+    });
 
-        const score = document.createElement("div");
-        score.className = "score";
-        score.textContent = "0";
+    await animateScore(row.score, player.clicks);
 
-        row.appendChild(place);
-        row.appendChild(name);
-        row.appendChild(score);
+    await sleep(180);
+  }
 
-        results.appendChild(row);
+  await sleep(1000);
+    // WINNER (first place)
 
-        requestAnimationFrame(() => {
-            row.classList.add("show");
-        });
+  const winner = players[0];
 
-        await animateScore(score, player.clicks);
+  const row = createPlayerCard(
+    1,
+    winner.username,
+    winner.clicks,
+    true
+  );
 
-        await sleep(180);
-    }
+  results.prepend(row.card);
 
+  requestAnimationFrame(() => {
+    row.card.classList.add("winner-show");
+  });
+
+  await animateScore(row.score, winner.clicks);
+}
+
+function createPlayerCard(place, username, clicks, winner) {
+
+  const card = document.createElement("div");
+
+  card.className = winner ? "player winner" : "player";
+
+  const placeDiv = document.createElement("div");
+  placeDiv.className = "place";
+  placeDiv.textContent = "#" + place;
+
+  const nameDiv = document.createElement("div");
+  nameDiv.className = "name";
+
+  if (winner) {
+    nameDiv.innerHTML = `
+      <div class="winner-title">🏆 WINNER</div>
+      <div>${username}</div>
+    `;
+  } else {
+    nameDiv.textContent = username;
+  }
+
+  const scoreDiv = document.createElement("div");
+  scoreDiv.className = "score";
+  scoreDiv.textContent = "0";
+
+  card.append(placeDiv, nameDiv, scoreDiv);
+
+  return { card, score: scoreDiv };
 }
 
 async function animateScore(element, target) {
 
-    let current = 0;
+  let current = 0;
 
-    const step = Math.max(1, Math.ceil(target / 90));
+  const step = Math.max(1, Math.ceil(target / 90));
 
-    while (current < target) {
+  while (current < target) {
 
-        current += step;
+    current += step;
 
-        if (current > target)
-            current = target;
+    if (current > target) current = target;
 
-        element.textContent = current.toLocaleString();
+    element.textContent = current.toLocaleString();
 
-        const s = tickSound.cloneNode();
+    const s = tickSound.cloneNode();
+    s.volume = 0.18;
+    s.play().catch(() => {});
 
-        s.volume = 0.18;
-
-        s.play().catch(() => {});
-
-        await sleep(18);
-    }
-
+    await sleep(18);
+  }
 }
