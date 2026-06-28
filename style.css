@@ -146,4 +146,13 @@ body{
 
     }
 
+
+.player {
+    transition:
+        opacity .45s ease,
+        transform .45s ease,
+        box-shadow .45s ease;
+}
+    
+
 }
